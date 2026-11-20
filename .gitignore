@@ -1,0 +1,13 @@
+/target
+/dist
+
+**/*.rs.bk
+*.pdb
+.DS_Store
+.env
+.env.*
+!.env.example
+
+.archify/
+.agents
+AGENTS.md

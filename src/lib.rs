@@ -1,0 +1,10 @@
+pub mod camera;
+pub mod cli;
+pub mod error;
+pub mod gui;
+pub mod migration;
+pub mod model;
+pub mod otpauth;
+pub mod proto;
+pub mod qrcode;
+pub mod ui;
