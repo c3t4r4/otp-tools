@@ -13,6 +13,7 @@
 | 2026-11-20 | Correção de `assets/AppIcon.icns` (substituição de `icp4`/`icp5` com `iCCP` por `is32`/`s8mk`, `il32`/`l8mk`, Retina `ic11`..`ic14` e `TOC `) para exibição nítida no modo Lista do Finder + `touch` no bundle e teste de regressão | concluída |
 | 2026-11-20 | Refino visual em `src/gui.rs`: aumento de paddings e espaçamentos internos em toda a UI (separação vertical entre botões e textos explicativos, margens `24x22` nos cards com `CARD_FRAME_CHROME_W`) e troca do tom rosa dos botões para roxo-violeta azulado (`#6D43F6`/`#6348EE`) | concluída |
 | 2026-11-20 | Correção do ícone do botão **Migration** na sidebar (setas bidirecionais desenhadas vetorialmente via `painter.line_segment`) e adição de padding (`16x12`) + centralização horizontal/vertical nos inputs de `T-02` e `T-03` | concluída |
+| 2026-11-23 | Correção dos 21 erros de lint/compilação do Rust 1.100.0 no GitHub Actions CI (`float_literal_f32_fallback` com sufixo `_f32` em `Stroke::new` de `src/gui.rs` e `clippy::chunks_exact_to_as_chunks` com `.as_chunks::<4>().0` em `src/camera.rs` e `src/qrcode.rs`) | concluída |
 
 ## Histórico
 
@@ -27,3 +28,4 @@
 - `2026-11-20`: Registro da correção dos chunks de resolução pequena (`is32`/`s8mk`, `il32`/`l8mk`, `ic11`..`ic14`) em `assets/AppIcon.icns` para o modo Lista do Finder.
 - `2026-11-20`: Registro do ajuste de espaçamentos/paddings na GUI e mudança dos botões primários para roxo-violeta azulado.
 - `2026-11-20`: Registro da correção vetorial do ícone **Migration** e do padding/centralização nos campos de entrada (`T-02`/`T-03`).
+- `2026-11-23`: Registro da correção dos 21 avisos promovidos a erro pelo Rust 1.100.0 (`float_literal_f32_fallback` e `clippy::chunks_exact_to_as_chunks`) nos workflows de CI.

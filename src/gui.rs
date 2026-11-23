@@ -552,13 +552,13 @@ fn apply_modern_theme(ctx: &egui::Context, dark_mode: bool) {
 
     visuals.widgets.inactive.bg_fill = palette.pill_bg;
     visuals.widgets.inactive.weak_bg_fill = palette.pill_bg;
-    visuals.widgets.inactive.bg_stroke = Stroke::new(1.0, palette.card_stroke);
+    visuals.widgets.inactive.bg_stroke = Stroke::new(1.0_f32, palette.card_stroke);
     visuals.widgets.hovered.bg_fill = palette.pill_active_bg;
     visuals.widgets.hovered.weak_bg_fill = palette.pill_active_bg;
-    visuals.widgets.hovered.bg_stroke = Stroke::new(1.2, palette.accent);
-    visuals.widgets.active.bg_stroke = Stroke::new(1.5, palette.accent);
+    visuals.widgets.hovered.bg_stroke = Stroke::new(1.2_f32, palette.accent);
+    visuals.widgets.active.bg_stroke = Stroke::new(1.5_f32, palette.accent);
     visuals.selection.bg_fill = palette.accent_fill.linear_multiply(0.35);
-    visuals.selection.stroke = Stroke::new(1.2, palette.accent);
+    visuals.selection.stroke = Stroke::new(1.2_f32, palette.accent);
 
     ctx.set_visuals(visuals);
 
@@ -733,7 +733,7 @@ impl OtpGuiApp {
         painter.rect_stroke(
             screen_rect.shrink(24.0),
             CornerRadius::same(20),
-            Stroke::new(2.5, palette.accent),
+            Stroke::new(2.5_f32, palette.accent),
             egui::StrokeKind::Inside,
         );
         painter.text(
@@ -748,14 +748,14 @@ impl OtpGuiApp {
     fn primary_button(text: &str, palette: ThemePalette) -> egui::Button<'_> {
         egui::Button::new(RichText::new(text).strong().color(palette.accent_text))
             .fill(palette.accent_fill)
-            .stroke(Stroke::new(1.0, palette.accent.linear_multiply(0.85)))
+            .stroke(Stroke::new(1.0_f32, palette.accent.linear_multiply(0.85)))
             .corner_radius(CornerRadius::same(10))
     }
 
     fn danger_button(text: &str, palette: ThemePalette) -> egui::Button<'_> {
         egui::Button::new(RichText::new(text).strong().color(Color32::WHITE))
             .fill(palette.danger)
-            .stroke(Stroke::new(1.0, palette.danger))
+            .stroke(Stroke::new(1.0_f32, palette.danger))
             .corner_radius(CornerRadius::same(10))
     }
 
@@ -810,7 +810,7 @@ impl OtpGuiApp {
                     rect,
                     CornerRadius::same(12),
                     palette.pill_active_bg,
-                    Stroke::new(1.0, palette.pill_active_stroke),
+                    Stroke::new(1.0_f32, palette.pill_active_stroke),
                     egui::StrokeKind::Inside,
                 );
             } else if response.hovered() {
@@ -830,7 +830,7 @@ impl OtpGuiApp {
             painter.rect_filled(squircle_rect, CornerRadius::same(8), squircle_fill);
             if tab == GuiTab::DecodeMigration {
                 let c = squircle_rect.center();
-                let s = Stroke::new(1.8, Color32::WHITE);
+                let s = Stroke::new(1.8_f32, Color32::WHITE);
                 let top_y = c.y - 3.5;
                 let bot_y = c.y + 3.5;
                 // Seta superior (esquerda -> direita)
@@ -903,7 +903,7 @@ impl OtpGuiApp {
     fn card_frame(palette: ThemePalette) -> egui::Frame {
         egui::Frame::NONE
             .fill(palette.card_bg)
-            .stroke(Stroke::new(1.0, palette.card_stroke))
+            .stroke(Stroke::new(1.0_f32, palette.card_stroke))
             .corner_radius(CornerRadius::same(18))
             .inner_margin(Margin::symmetric(24, 22))
             .shadow(palette.card_shadow)
@@ -912,7 +912,7 @@ impl OtpGuiApp {
     fn well_frame(palette: ThemePalette, corner_radius: u8, margin: Margin) -> egui::Frame {
         egui::Frame::NONE
             .fill(palette.well_bg)
-            .stroke(Stroke::new(1.0, palette.well_stroke))
+            .stroke(Stroke::new(1.0_f32, palette.well_stroke))
             .corner_radius(CornerRadius::same(corner_radius))
             .inner_margin(margin)
     }
@@ -1199,7 +1199,7 @@ impl OtpGuiApp {
                                 .fill(Color32::WHITE)
                                 .corner_radius(CornerRadius::same(14))
                                 .inner_margin(Margin::same(8))
-                                .stroke(Stroke::new(1.0, palette.card_stroke))
+                                .stroke(Stroke::new(1.0_f32, palette.card_stroke))
                                 .show(ui, |ui| {
                                     if let Some(tex) = qr_textures.get(&id_salt) {
                                         ui.add(
@@ -1230,7 +1230,7 @@ impl OtpGuiApp {
                             egui::Frame::NONE
                                 .fill(palette.pill_bg)
                                 .corner_radius(CornerRadius::same(14))
-                                .stroke(Stroke::new(1.0, palette.well_stroke))
+                                .stroke(Stroke::new(1.0_f32, palette.well_stroke))
                                 .inner_margin(Margin::same(14))
                                 .show(ui, |ui| {
                                     ui.set_min_size(Vec2::new(
@@ -1465,7 +1465,7 @@ impl OtpGuiApp {
                 egui::Frame::NONE
                     .fill(palette.card_bg)
                     .corner_radius(CornerRadius::same(18))
-                    .stroke(Stroke::new(1.5, palette.danger))
+                    .stroke(Stroke::new(1.5_f32, palette.danger))
                     .inner_margin(Margin::symmetric(24, 22))
                     .shadow(palette.card_shadow)
                     .show(ui, |ui| {
@@ -1579,7 +1579,7 @@ impl OtpGuiApp {
                             egui::Frame::NONE
                                 .fill(palette.card_bg)
                                 .corner_radius(CornerRadius::same(18))
-                                .stroke(Stroke::new(1.5, palette.danger))
+                                .stroke(Stroke::new(1.5_f32, palette.danger))
                                 .inner_margin(Margin::symmetric(24, 22))
                                 .shadow(palette.card_shadow)
                                 .show(ui, |ui| {
@@ -1799,7 +1799,7 @@ impl OtpGuiApp {
                         let target_rect = response.rect.shrink(display_size.min_elem() * 0.16);
                         let corner_len = (target_rect.width().min(target_rect.height()) * 0.20)
                             .clamp(14.0, 28.0);
-                        let stroke = Stroke::new(2.5, palette.accent);
+                        let stroke = Stroke::new(2.5_f32, palette.accent);
                         let p = ui.painter();
                         // Superior esquerda
                         p.line_segment(
@@ -1937,7 +1937,7 @@ impl eframe::App for OtpGuiApp {
                 egui::Frame::NONE
                     .fill(palette.sidebar_bg)
                     .inner_margin(Margin::symmetric(16, 20))
-                    .stroke(Stroke::new(1.0, palette.well_stroke)),
+                    .stroke(Stroke::new(1.0_f32, palette.well_stroke)),
             )
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
@@ -2040,7 +2040,7 @@ impl eframe::App for OtpGuiApp {
                 egui::Frame::NONE
                     .fill(palette.sidebar_bg)
                     .inner_margin(Margin::symmetric(24, 9))
-                    .stroke(Stroke::new(1.0, palette.well_stroke)),
+                    .stroke(Stroke::new(1.0_f32, palette.well_stroke)),
             )
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {

@@ -166,8 +166,7 @@ pub fn classify_qr_from_rgba_frame(
     }
 
     let mut gray_bytes = Vec::with_capacity((width as usize) * (height as usize));
-    for chunk in rgba.chunks_exact(4) {
-        let [r, g, b, a] = [chunk[0], chunk[1], chunk[2], chunk[3]];
+    for &[r, g, b, a] in rgba.as_chunks::<4>().0 {
         let luma = if a == 255 {
             ((299 * u32::from(r) + 587 * u32::from(g) + 114 * u32::from(b)) / 1000) as u8
         } else {

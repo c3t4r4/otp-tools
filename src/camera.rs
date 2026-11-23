@@ -449,8 +449,7 @@ fn yuyv_stride_to_rgba(
         for y in 0..height as usize {
             let start = y * effective_stride;
             let row = &yuyv[start..start + min_row_bytes];
-            for chunk in row.chunks_exact(4) {
-                let [y0, u, y1, v] = [chunk[0], chunk[1], chunk[2], chunk[3]];
+            for &[y0, u, y1, v] in row.as_chunks::<4>().0 {
                 rgba.extend_from_slice(&yuv_to_rgba_pixel(y0, u, v));
                 rgba.extend_from_slice(&yuv_to_rgba_pixel(y1, u, v));
             }
@@ -474,8 +473,7 @@ fn yuyv_stride_to_rgba(
         for y in (0..height as usize).step_by(2) {
             let start = y * effective_stride;
             let row = &yuyv[start..start + min_row_bytes];
-            for chunk in row.chunks_exact(4) {
-                let [y0, u, _, v] = [chunk[0], chunk[1], chunk[2], chunk[3]];
+            for &[y0, u, _, v] in row.as_chunks::<4>().0 {
                 rgba.extend_from_slice(&yuv_to_rgba_pixel(y0, u, v));
             }
         }

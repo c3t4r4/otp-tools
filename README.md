@@ -20,7 +20,7 @@ Aplicação **CLI + GUI** 100% offline em Rust para ler QR Codes (`PNG`, `JPG`, 
 
 ## Requisitos
 
-- Rust 1.87+ / Cargo (testado em `rustc 1.94.1`)
+- Rust 1.88+ / Cargo (testado em `rustc 1.94.1` e compatível com `rustc 1.100.0`)
 - No **Linux x64** (apenas para compilar a GUI a partir do código-fonte):
   ```bash
   sudo apt-get install -y libgtk-3-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev pkg-config
@@ -132,3 +132,7 @@ shellcheck scripts/package-macos-app.sh
 ## Licença
 
 [MIT License](./LICENSE) — Copyright (c) 2026 Glauco G. Cetara
+
+## Histórico
+
+- `2026-11-23`: Atualização do requisito mínimo de compilação (MSRV) para Rust 1.88+ (`<[T]>::as_chunks`) e compatibilidade com lints do Rust 1.100.0.
