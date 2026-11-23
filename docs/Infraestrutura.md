@@ -42,6 +42,14 @@ Para compilar `eframe` (OpenGL/X11/Wayland) e suporte nativo de diálogo (`rfd` 
 
 Nenhuma variável de ambiente ou segredo externo é necessário para build ou execução (o job `publish` utiliza apenas o `GITHUB_TOKEN` efêmero padrão do GitHub Actions).
 
+## Script de Release (`release.sh` / `scripts/release.sh`)
+
+O script `./release.sh` (atalho na raiz para `scripts/release.sh`) automatiza o ciclo local de versionamento e disparo do workflow `release.yml`:
+- Aceita opcionalmente uma versão SemVer `X.Y.Z` ou `vX.Y.Z`; se omitida, lê a maior versão entre `Cargo.toml` e as tags `v*` (locais e em `origin`) e incrementa `+1` no patch.
+- Valida antecipadamente branch ativo (bloqueia `detached HEAD`), working tree/index limpos para arquivos rastreados, consulta tags em `origin` em modo `fail-closed` e bloqueia qualquer versão inválida, igual à última tag lançada ou menor que versões já realizadas/registradas.
+- Solicita confirmação interativa (`[s/N]`) antes de aplicar modificações (suporta `-y`/`--yes`, `--skip-build` e `--repo-root` para testes automatizados).
+- Ao confirmar, atualiza `version` em `[package]` do `Cargo.toml` e em `[[package]] name = "otp-tools"` do `Cargo.lock`, recompila os binários release (`--locked` quando `Cargo.lock` está presente) e reempacota `dist/OTP Tools.app` no macOS para refletir a nova versão no aplicativo, commita a mudança de versão, executa `git tag v<VERSAO>` e envia branch + tag para `origin`.
+
 ## Histórico
 
 - `2026-11-19`: Criação inicial da documentação de infraestrutura e pipelines multiplataforma (`ci.yml` e `release.yml` para macOS ARM, Windows x64 e Linux x64).
@@ -51,3 +59,4 @@ Nenhuma variável de ambiente ou segredo externo é necessário para build ou ex
 - `2026-11-19`: Adição de `NSHumanReadableCopyright` ao `Info.plist` e geração de `Contents/Resources/Credits.rtf` para popular a janela nativa About do macOS `.app`.
 - `2026-11-19`: Inclusão de `NSCameraUsageDescription` em `Contents/Info.plist` (`scripts/package-macos-app.sh`) e documentação dos backends nativos de câmera (`AVFoundation`, `V4L2` via `libc` e Win32 `avicap32`).
 - `2026-11-20`: Regeneração de `assets/AppIcon.icns` com chunks `TOC `, `is32`/`s8mk`, `il32`/`l8mk` e `ic07`..`ic14` (sem `icp4`/`icp5` ou `iCCP`) para corrigir o modo Lista do Finder e adição de `touch` no bundle em `scripts/package-macos-app.sh`.
+- `2026-11-23`: Adição dos scripts `release.sh` e `scripts/release.sh` para versionamento SemVer seguro, atualização de `Cargo.toml`/`Cargo.lock`/`.app`, confirmação interativa e push da tag `v<VERSAO>`.

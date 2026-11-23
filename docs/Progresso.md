@@ -16,6 +16,7 @@
 | 2026-11-23 | Correção dos 21 erros de lint/compilação do Rust 1.100.0 no GitHub Actions CI (`float_literal_f32_fallback` com sufixo `_f32` em `Stroke::new` de `src/gui.rs` e `clippy::chunks_exact_to_as_chunks` com `.as_chunks::<4>().0` em `src/camera.rs` e `src/qrcode.rs`) | concluída |
 | 2026-11-23 | Correção dos erros de CI específicos de Linux (`dead_code` em `FrameSink`/`run_qr_scan_loop`) e Windows (`frame_callback as *const () as isize` para `fn_to_numeric_cast` / `function_casts_as_integer`) em `src/camera.rs` | concluída |
 | 2026-11-23 | Correção do erro de linkagem MSVC no Windows (`LNK1181: cannot open input file 'avicap32.lib'`) em `src/camera.rs` usando `kind = "raw-dylib"` para sintetizar a importação PE de `avicap32.dll` sem `.lib` externo | concluída |
+| 2026-11-23 | Criação dos scripts `release.sh` / `scripts/release.sh` com atualização de versão em `Cargo.toml`/`Cargo.lock`/`OTP Tools.app`, auto-incremento de patch, bloqueio de downgrade/repetição, confirmação interativa, `git tag` + `git push origin` e teste de integração dedicado | concluída |
 
 ## Histórico
 
@@ -33,3 +34,4 @@
 - `2026-11-23`: Registro da correção dos 21 avisos promovidos a erro pelo Rust 1.100.0 (`float_literal_f32_fallback` e `clippy::chunks_exact_to_as_chunks`) nos workflows de CI.
 - `2026-11-23`: Registro da correção dos erros condicionais por SO em `src/camera.rs` nos jobs Linux (`dead_code`) e Windows (`function_casts_as_integer` / `clippy::fn_to_numeric_cast`).
 - `2026-11-23`: Registro da correção de linkagem de `avicap32.dll` no Windows (`LNK1181`) utilizando `kind = "raw-dylib"` em `src/camera.rs`.
+- `2026-11-23`: Registro da criação dos scripts `release.sh` / `scripts/release.sh` e seu teste de integração end-to-end.

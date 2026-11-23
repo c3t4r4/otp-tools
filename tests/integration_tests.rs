@@ -684,3 +684,232 @@ fn macos_app_icon_icns_contains_retina_and_small_finder_list_chunks() {
         "icp5 legado corrompido não deve estar presente"
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn release_script_auto_increments_blocks_downgrade_requires_confirm_and_pushes_tag() {
+    use std::io::Write;
+    use std::process::{Output, Stdio};
+
+    fn run_git(dir: &Path, args: &[&str]) -> Output {
+        let out = Command::new("git")
+            .current_dir(dir)
+            .args(args)
+            .output()
+            .expect("executar comando git");
+        assert!(
+            out.status.success(),
+            "git {:?} falhou em {:?}: {}",
+            args,
+            dir,
+            String::from_utf8_lossy(&out.stderr)
+        );
+        out
+    }
+
+    fn run_release(script: &Path, work_dir: &Path, args: &[&str], stdin_input: &str) -> Output {
+        let mut cmd_args: Vec<&str> = Vec::with_capacity(args.len() + 3);
+        cmd_args.extend_from_slice(args);
+        cmd_args.push("--skip-build");
+        cmd_args.push("--repo-root");
+        cmd_args.push(work_dir.to_str().expect("caminho UTF-8"));
+
+        let mut child = Command::new(script)
+            .args(&cmd_args)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("executar ./release.sh");
+        if let Some(mut stdin) = child.stdin.take() {
+            stdin
+                .write_all(stdin_input.as_bytes())
+                .expect("escrever confirmação no stdin");
+        }
+        child
+            .wait_with_output()
+            .expect("aguardar saída de ./release.sh")
+    }
+
+    let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("release.sh");
+    assert!(script.is_file(), "release.sh deve existir na raiz");
+
+    let temp = TempDir::new().expect("criar TempDir");
+    let bare = temp.path().join("origin.git");
+    let work = temp.path().join("work");
+    fs::create_dir_all(&bare).expect("criar origin.git");
+    fs::create_dir_all(&work).expect("criar work");
+
+    run_git(&bare, &["init", "--bare"]);
+    run_git(&work, &["init"]);
+    run_git(&work, &["checkout", "-B", "main"]);
+    run_git(&work, &["config", "user.email", "release-test@example.com"]);
+    run_git(&work, &["config", "user.name", "Release Tester"]);
+    run_git(
+        &work,
+        &[
+            "remote",
+            "add",
+            "origin",
+            bare.to_str().expect("bare path UTF-8"),
+        ],
+    );
+
+    fs::write(
+        work.join("Cargo.toml"),
+        "[package]\nname = \"otp-tools\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\nserde = \"1.0.229\"\n",
+    )
+    .expect("gravar Cargo.toml inicial");
+    fs::write(
+        work.join("Cargo.lock"),
+        "version = 4\n\n[[package]]\nname = \"otp-tools\"\nversion = \"0.1.0\"\n\n[[package]]\nname = \"serde\"\nversion = \"1.0.229\"\n",
+    )
+    .expect("gravar Cargo.lock inicial");
+
+    run_git(&work, &["add", "Cargo.toml", "Cargo.lock"]);
+    run_git(&work, &["commit", "-m", "chore: initial commit"]);
+    run_git(&work, &["push", "-u", "origin", "main"]);
+
+    // 1. Cancelamento na confirmação não altera arquivos nem cria tag
+    let cancelled = run_release(&script, &work, &["1.0.0"], "n\n");
+    assert!(
+        !cancelled.status.success(),
+        "cancelamento deve retornar falha"
+    );
+    assert!(
+        fs::read_to_string(work.join("Cargo.toml"))
+            .unwrap()
+            .contains("version = \"0.1.0\""),
+        "Cargo.toml deve permanecer em 0.1.0 após cancelamento"
+    );
+    assert!(
+        String::from_utf8_lossy(&run_git(&bare, &["tag", "-l"]).stdout)
+            .trim()
+            .is_empty(),
+        "nenhuma tag deve existir em origin.git após cancelamento"
+    );
+
+    // 2. Bloqueia versão menor do que a atual em Cargo.toml
+    let lower_than_toml = run_release(&script, &work, &["0.0.9", "--yes"], "");
+    assert!(!lower_than_toml.status.success());
+
+    // 3. Sem informar versão, incrementa +1 no patch (0.1.0 -> 0.1.1) após confirmação
+    let auto_first = run_release(&script, &work, &[], "s\n");
+    assert!(
+        auto_first.status.success(),
+        "auto-incremento deveria passar: {}",
+        String::from_utf8_lossy(&auto_first.stderr)
+    );
+    let toml_011 = fs::read_to_string(work.join("Cargo.toml")).unwrap();
+    assert!(toml_011.contains("version = \"0.1.1\""));
+    assert!(
+        toml_011.contains("serde = \"1.0.229\""),
+        "versão de dependência não pode ser alterada"
+    );
+    let lock_011 = fs::read_to_string(work.join("Cargo.lock")).unwrap();
+    assert!(lock_011.contains("name = \"otp-tools\"\nversion = \"0.1.1\""));
+    assert!(lock_011.contains("name = \"serde\"\nversion = \"1.0.229\""));
+
+    let tags_after_first = String::from_utf8_lossy(&run_git(&bare, &["tag", "-l"]).stdout)
+        .trim()
+        .to_string();
+    assert_eq!(tags_after_first, "v0.1.1");
+
+    // 4. Bloqueia versão menor ou igual à já lançada (0.1.0, 0.1.1) e SemVer inválido
+    assert!(!run_release(&script, &work, &["0.1.0", "--yes"], "")
+        .status
+        .success());
+    assert!(!run_release(&script, &work, &["0.1.1", "--yes"], "")
+        .status
+        .success());
+    assert!(!run_release(&script, &work, &["01.2.0", "--yes"], "")
+        .status
+        .success());
+
+    // 5. Versão explícita v1.0.0 atualiza o app e envia tag v1.0.0 para origin
+    let explicit_100 = run_release(&script, &work, &["v1.0.0"], "sim\n");
+    assert!(
+        explicit_100.status.success(),
+        "release v1.0.0 falhou: {}",
+        String::from_utf8_lossy(&explicit_100.stderr)
+    );
+    assert!(fs::read_to_string(work.join("Cargo.toml"))
+        .unwrap()
+        .contains("version = \"1.0.0\""));
+    assert!(fs::read_to_string(work.join("Cargo.lock"))
+        .unwrap()
+        .contains("name = \"otp-tools\"\nversion = \"1.0.0\""));
+
+    let bare_tags = String::from_utf8_lossy(&run_git(&bare, &["tag", "-l"]).stdout).to_string();
+    assert!(bare_tags.lines().any(|line| line == "v1.0.0"));
+
+    // 6. Auto-incremento após v1.0.0 gera v1.0.1
+    let auto_101 = run_release(&script, &work, &["--yes"], "");
+    assert!(
+        auto_101.status.success(),
+        "auto-incremento v1.0.1 falhou: {}",
+        String::from_utf8_lossy(&auto_101.stderr)
+    );
+    assert!(fs::read_to_string(work.join("Cargo.toml"))
+        .unwrap()
+        .contains("version = \"1.0.1\""));
+    let bare_tags_final =
+        String::from_utf8_lossy(&run_git(&bare, &["tag", "-l"]).stdout).to_string();
+    assert!(bare_tags_final.lines().any(|line| line == "v1.0.1"));
+
+    // 7. Também bloqueia downgrade em relação a tag existente somente em origin (não no clone local)
+    run_git(&bare, &["tag", "v2.0.0", "refs/heads/main"]);
+    let blocked_by_origin = run_release(&script, &work, &["1.5.0", "--yes"], "");
+    assert!(
+        !blocked_by_origin.status.success(),
+        "deveria bloquear 1.5.0 pois origin já possui v2.0.0"
+    );
+
+    // 8. Rejeita alteração não commitada no working tree ou index antes de tocar versão
+    let orig_toml = fs::read_to_string(work.join("Cargo.toml")).unwrap();
+    fs::write(work.join("Cargo.toml"), format!("{orig_toml}\n# dirty\n"))
+        .expect("sujar Cargo.toml");
+    let dirty_res = run_release(&script, &work, &["2.1.0", "--yes"], "");
+    assert!(
+        !dirty_res.status.success(),
+        "deveria bloquear working tree com modificações não commitadas"
+    );
+    fs::write(work.join("Cargo.toml"), &orig_toml).expect("restaurar Cargo.toml");
+
+    // 9. Rejeita detached HEAD
+    run_git(&work, &["checkout", "--detach", "HEAD"]);
+    let detached_res = run_release(&script, &work, &["2.1.0", "--yes"], "");
+    assert!(
+        !detached_res.status.success(),
+        "deveria bloquear detached HEAD"
+    );
+    run_git(&work, &["checkout", "main"]);
+
+    // 10. Falha fechada (fail-closed) quando o remoto 'origin' está inacessível
+    let saved_origin =
+        String::from_utf8_lossy(&run_git(&work, &["remote", "get-url", "origin"]).stdout)
+            .trim()
+            .to_string();
+    let missing_origin = temp.path().join("missing_origin.git");
+    run_git(
+        &work,
+        &[
+            "remote",
+            "set-url",
+            "origin",
+            missing_origin.to_str().expect("missing_origin UTF-8"),
+        ],
+    );
+    let offline_res = run_release(&script, &work, &["2.1.0", "--yes"], "");
+    assert!(
+        !offline_res.status.success(),
+        "deveria falhar em modo fail-closed quando origin estiver inacessível"
+    );
+    assert!(
+        !fs::read_to_string(work.join("Cargo.toml"))
+            .unwrap()
+            .contains("2.1.0"),
+        "não deveria alterar Cargo.toml quando origin estiver inacessível"
+    );
+    run_git(&work, &["remote", "set-url", "origin", &saved_origin]);
+}

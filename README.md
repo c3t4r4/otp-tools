@@ -55,6 +55,16 @@ O repositório inclui pipelines GitHub Actions em [.github/workflows/ci.yml](.gi
 
 Ao criar uma tag `v*` (ex.: `git tag v0.1.0 && git push origin v0.1.0`), o workflow compila ambos os binários em cada sistema operacional, gera `SHA256SUMS.txt` e publica automaticamente na GitHub Release.
 
+Para automatizar esse fluxo localmente, utilize `./release.sh`:
+```bash
+# Atualiza Cargo.toml / Cargo.lock / app bundle, pede confirmação, cria a tag v1.0.0 e faz push:
+./release.sh 1.0.0
+
+# Sem argumento, incrementa +1 no patch da última versão (ex.: 1.0.0 -> 1.0.1):
+./release.sh
+```
+> O script bloqueia qualquer versão menor ou igual à última release já realizada.
+
 ## Uso
 
 ### Abrir interface gráfica (GUI)
@@ -108,7 +118,7 @@ Nenhuma variável de ambiente é necessária. A ferramenta opera 100% offline e 
 cargo test
 cargo clippy --all-targets -- -D warnings
 cargo fmt --check
-shellcheck scripts/package-macos-app.sh
+shellcheck release.sh scripts/package-macos-app.sh scripts/release.sh
 ```
 
 ## Autor e repositório
@@ -136,3 +146,4 @@ shellcheck scripts/package-macos-app.sh
 ## Histórico
 
 - `2026-11-23`: Atualização do requisito mínimo de compilação (MSRV) para Rust 1.88+ (`<[T]>::as_chunks`) e compatibilidade com lints do Rust 1.100.0.
+- `2026-11-23`: Adição da documentação do script de release `./release.sh` / `scripts/release.sh` e cobertura no `shellcheck`.

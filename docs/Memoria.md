@@ -32,6 +32,7 @@
   - **`dead_code` condicional por SO em `src/camera.rs`**: `FrameSink` e `run_qr_scan_loop` são usados apenas por `macos_camera` e `windows_camera` (pois `linux_camera` faz polling V4L2 direto), exigindo `#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]`.
   - **`function_casts_as_integer` e `clippy::fn_to_numeric_cast` no Windows**: Passar callbacks FFI para `LPARAM` (`isize`) em `SendMessageW` exige cast intermediário para ponteiro bruto (`frame_callback as *const () as isize`).
   - **Linkagem de `avicap32.dll` no Windows MSVC (`LNK1181`)**: O Windows SDK não distribui um import library chamado `avicap32.lib` (no Video for Windows legado essa DLL ficava sob `vfw32.lib`); usar `#[link(name = "avicap32", kind = "raw-dylib")]` (com `import_name_type = "undecorated"` em `x86`) instrui o compilador Rust a emitir a tabela de importação PE para `avicap32.dll` diretamente sem `.lib` externo.
+- **Sincronia `Cargo.toml` + `Cargo.lock` no `./release.sh`**: Como o workflow `.github/workflows/release.yml` executa `cargo test --locked` e `cargo build --locked`, atualizar apenas `Cargo.toml` quebraria o build remoto ao publicar a tag; `scripts/release.sh` atualiza portavelmente (via `awk` + `mktemp` sem `sed -i`) tanto `[package] version` no `Cargo.toml` quanto a entrada `[[package]] name = "otp-tools"` no `Cargo.lock` antes de empacotar, commitar e enviar a tag `v<VERSAO>`.
 
 ## Comandos descobertos
 
@@ -42,6 +43,7 @@
 - `cargo run --bin otp-tools -- qr --camera` — aciona a câmera/webcam no CLI para ler um QR Code do celular.
 - `cargo run --bin otp-tools-gui` — executa a interface gráfica desktop **OTP Tools**.
 - `./scripts/package-macos-app.sh` — gera `dist/OTP Tools.app` a partir do build release local.
+- `./release.sh [versao]` — atualiza versão em `Cargo.toml`/`Cargo.lock`/`.app`, pede confirmação interativa, faz commit, cria `git tag v<versao>` e envia para `origin` (incrementa `+1` no patch se a versão for omitida).
 
 ## Histórico
 
@@ -59,3 +61,4 @@
 - `2026-11-23`: Registro da compatibilidade com Rust 1.100.0 no CI (`_f32` em `Stroke::new` contra `float_literal_f32_fallback` e `.as_chunks::<4>().0` contra `clippy::chunks_exact_to_as_chunks`).
 - `2026-11-23`: Registro da supressão `dead_code` específica de plataforma (`macos`/`windows`) em `FrameSink`/`run_qr_scan_loop` e do cast `frame_callback as *const () as isize` no Windows em `src/camera.rs`.
 - `2026-11-23`: Registro da correção de linkagem no Windows MSVC (`LNK1181` em `avicap32.lib`) usando `#[link(name = "avicap32", kind = "raw-dylib")]`.
+- `2026-11-23`: Registro da automação de release (`./release.sh` / `scripts/release.sh`) e atualização coordenada de `Cargo.toml` e `Cargo.lock` com `awk`.
