@@ -14,6 +14,7 @@
 | 2026-11-20 | Refino visual em `src/gui.rs`: aumento de paddings e espaçamentos internos em toda a UI (separação vertical entre botões e textos explicativos, margens `24x22` nos cards com `CARD_FRAME_CHROME_W`) e troca do tom rosa dos botões para roxo-violeta azulado (`#6D43F6`/`#6348EE`) | concluída |
 | 2026-11-20 | Correção do ícone do botão **Migration** na sidebar (setas bidirecionais desenhadas vetorialmente via `painter.line_segment`) e adição de padding (`16x12`) + centralização horizontal/vertical nos inputs de `T-02` e `T-03` | concluída |
 | 2026-11-23 | Correção dos 21 erros de lint/compilação do Rust 1.100.0 no GitHub Actions CI (`float_literal_f32_fallback` com sufixo `_f32` em `Stroke::new` de `src/gui.rs` e `clippy::chunks_exact_to_as_chunks` com `.as_chunks::<4>().0` em `src/camera.rs` e `src/qrcode.rs`) | concluída |
+| 2026-11-23 | Correção dos erros de CI específicos de Linux (`dead_code` em `FrameSink`/`run_qr_scan_loop`) e Windows (`frame_callback as *const () as isize` para `fn_to_numeric_cast` / `function_casts_as_integer`) em `src/camera.rs` | concluída |
 
 ## Histórico
 
@@ -29,3 +30,4 @@
 - `2026-11-20`: Registro do ajuste de espaçamentos/paddings na GUI e mudança dos botões primários para roxo-violeta azulado.
 - `2026-11-20`: Registro da correção vetorial do ícone **Migration** e do padding/centralização nos campos de entrada (`T-02`/`T-03`).
 - `2026-11-23`: Registro da correção dos 21 avisos promovidos a erro pelo Rust 1.100.0 (`float_literal_f32_fallback` e `clippy::chunks_exact_to_as_chunks`) nos workflows de CI.
+- `2026-11-23`: Registro da correção dos erros condicionais por SO em `src/camera.rs` nos jobs Linux (`dead_code`) e Windows (`function_casts_as_integer` / `clippy::fn_to_numeric_cast`).

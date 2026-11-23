@@ -42,12 +42,14 @@ pub enum CameraUpdate {
     Error(String),
 }
 
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 struct FrameSink {
     capture_stop: Arc<AtomicBool>,
     latest_frame: Mutex<Option<CameraFrame>>,
     cv: Condvar,
 }
 
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 impl FrameSink {
     fn new(capture_stop: Arc<AtomicBool>) -> Self {
         Self {
@@ -271,10 +273,7 @@ fn send_reliable(
     }
 }
 
-#[cfg_attr(
-    not(any(target_os = "macos", target_os = "linux", target_os = "windows")),
-    allow(dead_code)
-)]
+#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]
 fn run_qr_scan_loop(
     sink: &FrameSink,
     user_stopped: &AtomicBool,
@@ -1907,7 +1906,12 @@ mod windows_camera {
 
         unsafe {
             SetWindowLongPtrW(hwnd, GWLP_USERDATA, ctx_ptr as isize);
-            SendMessageW(hwnd, WM_CAP_SET_CALLBACK_FRAME, 0, frame_callback as isize);
+            SendMessageW(
+                hwnd,
+                WM_CAP_SET_CALLBACK_FRAME,
+                0,
+                frame_callback as *const () as isize,
+            );
         }
 
         let grab_user_stopped = Arc::clone(user_stopped);

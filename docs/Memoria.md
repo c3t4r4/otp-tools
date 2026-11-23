@@ -29,6 +29,8 @@
 - **Compatibilidade com `rustc` / `clippy` `1.100.0+` no CI (`-D warnings`)**:
   - **`float_literal_f32_fallback` (`rust-lang/rust#154024`)**: Métodos genéricos como `egui::Stroke::new(width: impl Into<f32>, ...)` passaram a rejeitar literais float sem sufixo sob `-D warnings` porque `f32: From<f64>` não é satisfeito; explicitar sempre `<valor>_f32` (ex.: `1.0_f32`).
   - **`clippy::chunks_exact_to_as_chunks`**: Iterações sobre fatias com tamanho constante conhecido (`chunks_exact(4)` em quadros YUYV/RGBA) passam a exigir `.as_chunks::<4>().0` (estável desde o Rust 1.88.0).
+  - **`dead_code` condicional por SO em `src/camera.rs`**: `FrameSink` e `run_qr_scan_loop` são usados apenas por `macos_camera` e `windows_camera` (pois `linux_camera` faz polling V4L2 direto), exigindo `#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]`.
+  - **`function_casts_as_integer` e `clippy::fn_to_numeric_cast` no Windows**: Passar callbacks FFI para `LPARAM` (`isize`) em `SendMessageW` exige cast intermediário para ponteiro bruto (`frame_callback as *const () as isize`).
 
 ## Comandos descobertos
 
@@ -54,3 +56,4 @@
 - `2026-11-20`: Registro da constante `CARD_FRAME_CHROME_W` vinculada à margem interna dos cards e padronização de espaçamento em `src/gui.rs`.
 - `2026-11-20`: Registro da substituição vetorial de `U+21C4` no ícone **Migration** e do ajuste de margem/alinhamento em `TextEdit::singleline`.
 - `2026-11-23`: Registro da compatibilidade com Rust 1.100.0 no CI (`_f32` em `Stroke::new` contra `float_literal_f32_fallback` e `.as_chunks::<4>().0` contra `clippy::chunks_exact_to_as_chunks`).
+- `2026-11-23`: Registro da supressão `dead_code` específica de plataforma (`macos`/`windows`) em `FrameSink`/`run_qr_scan_loop` e do cast `frame_callback as *const () as isize` no Windows em `src/camera.rs`.
