@@ -1,6 +1,6 @@
 [package]
 name = "otp-tools"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Glauco G. Cetara <glaucogcetara@gmail.com>"]
 description = "OTP Tools — CLI e GUI offline em Rust para ler QR Codes (PNG/JPG/JPEG), decodificar otpauth-migration://, analisar otpauth:// e gerar QR Codes por conta"
