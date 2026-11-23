@@ -31,6 +31,7 @@
   - **`clippy::chunks_exact_to_as_chunks`**: Iterações sobre fatias com tamanho constante conhecido (`chunks_exact(4)` em quadros YUYV/RGBA) passam a exigir `.as_chunks::<4>().0` (estável desde o Rust 1.88.0).
   - **`dead_code` condicional por SO em `src/camera.rs`**: `FrameSink` e `run_qr_scan_loop` são usados apenas por `macos_camera` e `windows_camera` (pois `linux_camera` faz polling V4L2 direto), exigindo `#[cfg_attr(not(any(target_os = "macos", target_os = "windows")), allow(dead_code))]`.
   - **`function_casts_as_integer` e `clippy::fn_to_numeric_cast` no Windows**: Passar callbacks FFI para `LPARAM` (`isize`) em `SendMessageW` exige cast intermediário para ponteiro bruto (`frame_callback as *const () as isize`).
+  - **Linkagem de `avicap32.dll` no Windows MSVC (`LNK1181`)**: O Windows SDK não distribui um import library chamado `avicap32.lib` (no Video for Windows legado essa DLL ficava sob `vfw32.lib`); usar `#[link(name = "avicap32", kind = "raw-dylib")]` (com `import_name_type = "undecorated"` em `x86`) instrui o compilador Rust a emitir a tabela de importação PE para `avicap32.dll` diretamente sem `.lib` externo.
 
 ## Comandos descobertos
 
@@ -57,3 +58,4 @@
 - `2026-11-20`: Registro da substituição vetorial de `U+21C4` no ícone **Migration** e do ajuste de margem/alinhamento em `TextEdit::singleline`.
 - `2026-11-23`: Registro da compatibilidade com Rust 1.100.0 no CI (`_f32` em `Stroke::new` contra `float_literal_f32_fallback` e `.as_chunks::<4>().0` contra `clippy::chunks_exact_to_as_chunks`).
 - `2026-11-23`: Registro da supressão `dead_code` específica de plataforma (`macos`/`windows`) em `FrameSink`/`run_qr_scan_loop` e do cast `frame_callback as *const () as isize` no Windows em `src/camera.rs`.
+- `2026-11-23`: Registro da correção de linkagem no Windows MSVC (`LNK1181` em `avicap32.lib`) usando `#[link(name = "avicap32", kind = "raw-dylib")]`.

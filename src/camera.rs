@@ -1721,7 +1721,15 @@ mod windows_camera {
         compression: u32,
     }
 
-    #[link(name = "avicap32")]
+    #[cfg_attr(
+        target_arch = "x86",
+        link(
+            name = "avicap32",
+            kind = "raw-dylib",
+            import_name_type = "undecorated"
+        )
+    )]
+    #[cfg_attr(not(target_arch = "x86"), link(name = "avicap32", kind = "raw-dylib"))]
     extern "system" {
         fn capCreateCaptureWindowW(
             lpsz_window_name: *const u16,
